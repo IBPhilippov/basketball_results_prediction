@@ -1,0 +1,1 @@
+{"remote_blocks": [{"block_uuid": "build", "execution_partition": "5/20240810T213135_690446", "pipeline_uuid": "get_data_from_bq", "repo_path": "/home/src/Basketball_results_prediction"}]}

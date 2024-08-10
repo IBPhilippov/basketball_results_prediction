@@ -18,6 +18,8 @@ import os
 from os import path
 from concurrent.futures import TimeoutError
 from mlflow import MlflowClient
+from google.oauth2 import service_account
+
 
 #os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'credentials.json'
 #os.environ['GCP_PROJECT_NAME'] = 'ibphilippov-mlops' #!!!! удалить
@@ -46,7 +48,9 @@ def listen(message_sent):
     global processed_data
     project_id=os.environ['GCP_PROJECT_NAME']
     timeout = 15
-    subscriber = pubsub_v1.SubscriberClient()
+
+    subscriber = pubsub_v1.SubscriberClient(credentials=service_account.Credentials.from_service_account_file(
+        'credentials.json'))
     subscription_path = subscriber.subscription_path(project_id, 'read')
     processed_data=[]
     streaming_pull_future = subscriber.subscribe(subscription_path, callback=callback_listen)
@@ -66,7 +70,8 @@ def listen(message_sent):
 def publish(data):
     project_id=os.environ['GCP_PROJECT_NAME']
     topic_id = "predictions-input"
-    publisher = pubsub_v1.PublisherClient()
+    publisher = pubsub_v1.PublisherClient(credentials=service_account.Credentials.from_service_account_file(
+        'credentials.json'))
     topic_path = publisher.topic_path(project_id, topic_id)
     publish_futures = []
     data = json.dumps(data).encode('utf-8')

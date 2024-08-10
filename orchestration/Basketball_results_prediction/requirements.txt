@@ -10,3 +10,4 @@ shap
 xgboost
 google-cloud-storage
 google-cloud-pubsub
+evidently

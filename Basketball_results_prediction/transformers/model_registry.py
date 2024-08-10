@@ -7,7 +7,8 @@ from mlflow import MlflowClient
 import mlflow
 @transformer
 def transform(data, *args, **kwargs):
-    train_year=data[0][0]
+    print(data)
+    train_year=data[0]
     print(train_year)
     mlflow.set_tracking_uri("http://mlflow:5000")
     mlflow.set_experiment("basketball")

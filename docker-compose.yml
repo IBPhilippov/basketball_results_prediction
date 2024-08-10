@@ -18,7 +18,8 @@ services:
       - backend
 
   mage-orc:
-    command: [sh, -c, "cp ${GOOGLE_CREDENTIALS} Basketball_results_prediction/credentials.json&&cp ${GOOGLE_CREDENTIALS} credentials.json&&mage run /home/src/Basketball_results_prediction get_data_from_bq"]
+    #command: [sh, -c, "cp ${GOOGLE_CREDENTIALS} Basketball_results_prediction/credentials.json&&cp ${GOOGLE_CREDENTIALS} credentials.json&&mage run /home/src/Basketball_results_prediction get_data_from_bq"]
+    command: [sh, -c, "cp ${GOOGLE_CREDENTIALS} Basketball_results_prediction/credentials.json&&cp ${GOOGLE_CREDENTIALS} credentials.json&& /app/run_app.sh mage start Basketball_results_prediction "]
 
     #command: mage start  Basketball_results_prediction
     build:
@@ -28,7 +29,10 @@ services:
           GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS}
           ARTIFACT_STORAGE: ${ARTIFACT_STORAGE}
           GCP_PROJECT_NAME: ${GCP_PROJECT_NAME} 
-
+    depends_on:
+      - db
+      - terraform
+      - mlflow
     networks:
       - backend
       - app-network  
@@ -48,7 +52,7 @@ services:
             GCP_LOCATION: ${GCP_LOCATION}
             GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS}
             ARTIFACT_STORAGE: ${ARTIFACT_STORAGE}
-
+#
   mlflow:
     command: mlflow server -p 5000 --default-artifact-root gs://${ARTIFACT_STORAGE}/ --backend-store-uri postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME} --host 0.0.0.0  
     build:
@@ -73,10 +77,22 @@ services:
             GCP_LOCATION: ${GCP_LOCATION}
             GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS}
             ARTIFACT_STORAGE: ${ARTIFACT_STORAGE}
+    depends_on:
+      - mage-orc
     ports:
       - "9696:9696"
     networks:
       - app-network
+  initial_run:
+    command: python3 start_running.py
+    build:
+      context: .
+      dockerfile: ./initial_run/Dockerfile
+    depends_on:
+      - mage-orc
+    networks:
+      - app-network
+        
 
 
 

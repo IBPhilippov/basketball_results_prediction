@@ -10,12 +10,12 @@ blocks:
   language: python
   name: make_prediction
   retry_config: null
-  status: updated
+  status: executed
   timeout: null
   type: custom
   upstream_blocks: []
   uuid: make_prediction
-- all_upstream_blocks_executed: false
+- all_upstream_blocks_executed: true
   color: null
   configuration:
     file_path: data_exporters/send_to_monitoring.py
@@ -28,7 +28,7 @@ blocks:
   language: python
   name: send_to_monitoring
   retry_config: null
-  status: updated
+  status: executed
   timeout: null
   type: data_exporter
   upstream_blocks:

@@ -5,6 +5,8 @@ import requests
 
 @data_exporter
 def trigger(*args, **kwargs):
+    r=requests.get('http://localhost:6789/api/pipelines?include_schedules=1')
+    j=r.json()
     for el in j['pipelines']:
         for sh in el['schedules']:
             if sh['name']=='trigger_training' and sh['schedule_type']=='api':

@@ -24,7 +24,7 @@ def get_prediction(data):
     status='running'
     while status not in ['completed','failed']:
         sleep(1)
-        r=requests.get('http://mage-orc:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs?api_key=d7989ff289e04a32becd553b733fa5fc' )
+        r=requests.get(url=f'http://mage-orc:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs?api_key=d7989ff289e04a32becd553b733fa5fc' )
         j=r.json()
         status=j['pipeline_runs'][0]['status']
     output=load_from_gcs()

@@ -28,7 +28,7 @@ def hyperparameter_tuning(
     if model_class_name=='linear_model.LinearRegression':
         max_evaluations=1
     else:
-        max_evaluations=50
+        max_evaluations=2
     max_evaluations=max_evaluations
     hyperparameters = tune_hyperparameters(
         model_class=model_class,

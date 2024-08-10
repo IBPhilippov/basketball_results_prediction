@@ -4,7 +4,7 @@ import requests
 
 
 @data_exporter
-def export_data(data, *args, **kwargs)->List:
+def export_data(data, *args, **kwargs):
     """
     Exports data to some source.
 
@@ -22,7 +22,7 @@ def export_data(data, *args, **kwargs)->List:
         for sh in el['schedules']:
             if sh['name']=='add_to_monitoring' and sh['schedule_type']=='api':
                 trigger_id=sh['id']
-    r=requests.post(url='http://localhost:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/96a3147e2ac749929eadac81c581d8e3', data=data)
-
+    r=requests.post(url=f'http://localhost:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/96a3147e2ac749929eadac81c581d8e3', data=str(data).replace("'",'"'))
+    print(r.json())
     return data
 
