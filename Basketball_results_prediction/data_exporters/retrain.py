@@ -29,8 +29,14 @@ def trigger(data, *args, **kwargs):
         if train_year<2017:
             train_year=train_year+1
             val_year=train_year+1
+        r=requests.get('http://localhost:6789/api/pipelines?include_schedules=1')
+        j=r.json()
+        for el in j['pipelines']:
+            for sh in el['schedules']:
+                if sh['name']=='GLOBAL_DATA_PRODUCT_TRIGGER' and sh['schedule_type']=='api':
+                    trigger_id=sh['id']
         r=requests.post(
-            'http://localhost:6789/api/pipeline_schedules/1/pipeline_runs/fe9b2f2228444b739bf9e191304675d7', data=str({
+            f'http://localhost:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/fe9b2f2228444b739bf9e191304675d7', data=str({
   "pipeline_run": {
     "variables": {
       "use_dv": 0,

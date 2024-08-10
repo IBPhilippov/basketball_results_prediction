@@ -5,4 +5,8 @@ import requests
 
 @data_exporter
 def trigger(*args, **kwargs):
-    requests.post('http://localhost:6789/api/pipeline_schedules/4/pipeline_runs/73dd5fc8d6c84d9aa9d714fa408b2850')
+    for el in j['pipelines']:
+        for sh in el['schedules']:
+            if sh['name']=='trigger_training' and sh['schedule_type']=='api':
+                trigger_id=sh['id']
+    requests.post(f'http://localhost:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/73dd5fc8d6c84d9aa9d714fa408b2850')

@@ -16,7 +16,13 @@ def export_data(data, *args, **kwargs)->List:
         Optionally return any object and it'll be logged and
         displayed when inspecting the block run.
     """
-    r=requests.post(url='http://localhost:6789/api/pipeline_schedules/3/pipeline_runs/96a3147e2ac749929eadac81c581d8e3', data=data)
+    r=requests.get('http://localhost:6789/api/pipelines?include_schedules=1')
+    j=r.json()
+    for el in j['pipelines']:
+        for sh in el['schedules']:
+            if sh['name']=='add_to_monitoring' and sh['schedule_type']=='api':
+                trigger_id=sh['id']
+    r=requests.post(url='http://localhost:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/96a3147e2ac749929eadac81c581d8e3', data=data)
 
     return data
 

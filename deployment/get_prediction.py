@@ -13,12 +13,18 @@ def load_from_gcs():
     return data['prediction']
 
 def get_prediction(data):
-    r=requests.post(url='http://mage-orc:6789/api/pipeline_schedules/2/pipeline_runs/d7989ff289e04a32becd553b733fa5fc', data=data)
+   r=requests.get('http://lmage-orc:6789/api/pipelines?include_schedules=1')
+   j=r.json()
+   for el in j['pipelines']:
+    for sh in el['schedules']:
+        if sh['name']=='GLOBAL_DATA_PRODUCT_TRIGGER' and sh['schedule_type']=='api':
+            trigger_id=sh['id']
+    r=requests.post(url=f'http://mage-orc:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/d7989ff289e04a32becd553b733fa5fc', data=data)
     print(r.json())
     status='running'
     while status not in ['completed','failed']:
         sleep(1)
-        r=requests.get('http://mage-orc:6789/api/pipeline_schedules/2/pipeline_runs?api_key=d7989ff289e04a32becd553b733fa5fc' )
+        r=requests.get('http://mage-orc:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs?api_key=d7989ff289e04a32becd553b733fa5fc' )
         j=r.json()
         status=j['pipeline_runs'][0]['status']
     output=load_from_gcs()
