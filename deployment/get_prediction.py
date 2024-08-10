@@ -13,7 +13,7 @@ def load_from_gcs():
     return data['prediction']
 
 def get_prediction(data):
-   r=requests.get('http://lmage-orc:6789/api/pipelines?include_schedules=1')
+   r=requests.get('http://mage-orc:6789/api/pipelines?include_schedules=1')
    j=r.json()
    for el in j['pipelines']:
     for sh in el['schedules']:
