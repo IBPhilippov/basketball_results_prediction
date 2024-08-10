@@ -17,7 +17,7 @@ def get_prediction(data):
    j=r.json()
    for el in j['pipelines']:
     for sh in el['schedules']:
-        if sh['name']=='GLOBAL_DATA_PRODUCT_TRIGGER' and sh['schedule_type']=='api':
+        if sh['name']=='basketball_predict' and sh['schedule_type']=='api':
             trigger_id=sh['id']
     r=requests.post(url=f'http://mage-orc:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/d7989ff289e04a32becd553b733fa5fc', data=data)
     print(r.json())
