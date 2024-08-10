@@ -1,0 +1,14 @@
+triggers:
+- description: null
+  envs: []
+  last_enabled_at: 2024-08-09 21:09:38.082657
+  name: add_to_monitoring
+  pipeline_uuid: monitoring
+  schedule_interval: null
+  schedule_type: api
+  settings: null
+  sla: null
+  start_time: 2024-08-09 14:11:00
+  status: active
+  token: 96a3147e2ac749929eadac81c581d8e3
+  variables: {}

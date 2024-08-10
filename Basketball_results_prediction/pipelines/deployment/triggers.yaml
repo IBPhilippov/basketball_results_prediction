@@ -1,0 +1,14 @@
+triggers:
+- description: null
+  envs: []
+  last_enabled_at: 2024-08-06 21:27:27.307003
+  name: basketball_predict
+  pipeline_uuid: deployment
+  schedule_interval: null
+  schedule_type: api
+  settings: null
+  sla: null
+  start_time: 2024-08-06 18:12:00
+  status: active
+  token: d7989ff289e04a32becd553b733fa5fc
+  variables: {}

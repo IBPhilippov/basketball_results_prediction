@@ -1,0 +1,14 @@
+triggers:
+- description: null
+  envs: []
+  last_enabled_at: 2024-08-10 18:29:28.856558+00:00
+  name: GLOBAL_DATA_PRODUCT_TRIGGER
+  pipeline_uuid: get_data_from_bq
+  schedule_interval: null
+  schedule_type: api
+  settings: null
+  sla: null
+  start_time: 2024-08-09 21:11:00
+  status: active
+  token: fe9b2f2228444b739bf9e191304675d7
+  variables: {}
