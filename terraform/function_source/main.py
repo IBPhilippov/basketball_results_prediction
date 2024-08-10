@@ -19,8 +19,7 @@ def transform_data(df, *args, **kwargs):
     df=df.fillna(0)
     for col in 'h_two_points_pct','h_three_points_pct','a_two_points_pct','a_three_points_pct':
         df[col]=df[col].map(lambda x: prepare_data(x,'pct'))
-    X=df[['h_two_points_pct','h_three_points_pct','h_steals','h_blocks','h_personal_fouls','a_two_points_pct','a_three_points_pct','a_steals','a_blocks','a_personal_fouls']]
-    return X
+    return df
 
 def send_result_to_pubsub(res,project_id):
 
@@ -52,9 +51,10 @@ def predictFromPubSub(cloud_event: CloudEvent) -> None:
     project_id = data['project_id']
     bucket_name = data['bucket_name']
     model = mlflow.pyfunc.load_model(logged_model)
-    features = transform_data(event_data)
+    df = transform_data(event_data)
+    features = df[['h_two_points_pct','h_two_points_att','h_three_points_pct','h_three_points_att','h_steals','h_blocks','h_personal_fouls','a_two_points_pct','a_two_points_att','a_three_points_pct','a_three_points_att','a_steals','a_blocks','a_personal_fouls']]
     pred = model.predict(features)
     pred = pred.tolist()
-    send_result_to_pubsub({'data':data['event'],'prediction':pred}, project_id)
+    send_result_to_pubsub({'data':data['event'],'prediction':pred,'prepared_X': df.to_dict('records')}, project_id)
     save_to_gcs({'data':data['event'],'prediction':pred},bucket_name)
     return float(pred[0])
