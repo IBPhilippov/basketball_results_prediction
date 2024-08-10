@@ -1,0 +1,17 @@
+gdp_train_data:
+  object_type: pipeline
+  object_uuid: get_data_from_bq
+  outdated_after:
+    seconds: 259200
+    years: null
+  repo_path: /home/src/Basketball_results_prediction
+  settings:
+    build:
+      partitions: 1
+global_data:
+  object_type: pipeline
+  object_uuid: get_data_from_bq
+  repo_path: /home/src/Basketball_results_prediction
+  settings:
+    build:
+      partitions: 1

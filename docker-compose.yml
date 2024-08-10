@@ -1,0 +1,84 @@
+version: '3'
+networks:
+  app-network:
+    driver: bridge
+  backend:
+services:
+  db:
+    image: postgres
+    restart: always
+
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+    ports:
+      - "5433:5432"
+    networks:
+      - backend
+
+  mage-orc:
+    #command: [sh, -c, "cp ${GOOGLE_CREDENTIALS} gdelt_cooperation/credentials.json&&mage run /home/src/gdelt_cooperation gdelt_spark --runtime-vars '{ \"year\": 2019}'&&mage run /home/src/gdelt_cooperation gdelt_spark --runtime-vars '{ \"year\": 2020}'&&mage run /home/src/gdelt_cooperation gdelt_spark --runtime-vars '{ \"year\": 2021}'&&mage run /home/src/gdelt_cooperation gdelt_spark --runtime-vars '{ \"year\": 2022}'&&mage run /home/src/gdelt_cooperation gdelt_spark --runtime-vars '{ \"year\": 2023}'&&mage run /home/src/gdelt_cooperation gdelt_spark --runtime-vars '{ \"year\": 2024}'&&mage start gdelt_cooperation"]
+    command: /app/run_app.sh mage start  Basketball_results_prediction
+ 
+    build:
+      context: .
+      dockerfile: ./orchestration/Dockerfile
+      args: 
+        GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS}
+        ARTIFACT_STORAGE: ${ARTIFACT_STORAGE}
+        GCP_PROJECT_NAME: ${GCP_PROJECT_NAME} 
+
+
+
+    networks:
+      - backend
+      - app-network  
+    ports:
+      - 6789:6789
+    volumes:
+      - .:/home/src/
+    restart: on-failure:5
+
+  terraform:
+    image: terraform:Dockerfile
+    build:
+        context: ./
+        dockerfile: ./terraform/Dockerfile
+        args: 
+            GCP_PROJECT_NAME: ${GCP_PROJECT_NAME} 
+            GCP_LOCATION: ${GCP_LOCATION}
+            GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS}
+            ARTIFACT_STORAGE: ${ARTIFACT_STORAGE}
+
+  mlflow:
+    command: mlflow server -p 5000 --default-artifact-root gs://${ARTIFACT_STORAGE}/ --backend-store-uri postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME} --host 0.0.0.0  
+    build:
+        context: .
+        dockerfile: ./tracking/Dockerfile
+        args: 
+          GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS} 
+    ports:
+      - "5000:5000"
+    networks:
+      - backend
+      - app-network  
+
+
+  deployment:
+    #command: mlflow server -p 5000 --default-artifact-root gs://${ARTIFACT_STORAGE}/ --backend-store-uri postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME} --host 0.0.0.0  
+    build:
+        context: .
+        dockerfile: ./deployment/Dockerfile
+        args: 
+            GCP_PROJECT_NAME: ${GCP_PROJECT_NAME} 
+            GCP_LOCATION: ${GCP_LOCATION}
+            GOOGLE_CREDENTIALS: ${GOOGLE_CREDENTIALS}
+            ARTIFACT_STORAGE: ${ARTIFACT_STORAGE}
+    ports:
+      - "9696:9696"
+    networks:
+      - app-network
+
+
+

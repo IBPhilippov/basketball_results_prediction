@@ -1,0 +1,12 @@
+fastparquet
+graphviz
+hyperopt
+jupyter
+mlflow==2.12.1
+pandas
+scikit-learn
+seaborn
+shap
+xgboost
+google-cloud-storage
+google-cloud-pubsub

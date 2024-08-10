@@ -1,0 +1,7 @@
+resources:
+  BlockOutput:
+    execute:
+    - metadata:
+        created_at: '2024-08-07 20:10:14'
+        updated_at: '2024-08-07 20:10:14'
+      uuid: get_prediction_data

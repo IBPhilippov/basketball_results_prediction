@@ -1,0 +1,10 @@
+graphviz
+hyperopt
+jupyter
+mlflow==2.12.1
+pandas
+scikit-learn
+shap
+xgboost
+google-cloud-storage
+evidently

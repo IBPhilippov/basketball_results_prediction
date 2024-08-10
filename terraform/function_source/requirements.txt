@@ -1,0 +1,6 @@
+mlflow
+pandas
+google-cloud-pubsub
+google-cloud-storage
+gunicorn==19.2.0
+flask<3.0,>=1.0
