@@ -14,12 +14,14 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 1. Docker/Docker Compose for conteinerization and easy deployment
 2. Terraform for automated management of cloud infrastructure (IaC).
 3. [Mage.AI](https://www.mage.ai) as an orchestrator.
-4. Google Cloud Storage as data lake, Google Cloud Storage as a storage, Google BigQuery as DWH. 
-5. [Evidently](https://www.evidentlyai.com) for monitoring.
-6. Lookerstudio for dashboards and reporting. 
-
-
+4. Google Cloud Storage as a storage, Google BigQuery as data source.
+5. Google Pub/Sub and Google Cloud Functions for deployment. 
+6. [Evidently](https://www.evidentlyai.com) for monitoring.
+   
 ---
+## Requirements
+1. Google Cloud Account with enabled billing (it will work with free 300$ quota for new users) and created service account with Owner rights ([instruction](https://docs.google.com/document/d/1gmRiIsNa_tk31YI5CB7p2V3m3N01sKAcD5FAVaQbwpg/edit?usp=sharing).
+2. Docker newer than v26.0> and docker-compose newer than v2.28.
 
 ## How to reproduce
 0. Create Google Cloud Account. Enable BigQuery API, enable Google Cloud Storage API.  
