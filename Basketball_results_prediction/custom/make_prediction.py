@@ -21,10 +21,6 @@ from mlflow import MlflowClient
 from google.oauth2 import service_account
 
 
-#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'credentials.json'
-#os.environ['GCP_PROJECT_NAME'] = 'ibphilippov-mlops' #!!!! удалить
-#os.environ['ARTIFACT_STORAGE'] = 'ibphilippov-mlops-storage'
-
 def get_callback(
     publish_future: pubsub_v1.publisher.futures.Future, data: str
 ) -> Callable[[pubsub_v1.publisher.futures.Future], None]:
