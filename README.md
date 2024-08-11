@@ -20,15 +20,15 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
    
 ---
 ## Requirements
-1. Google Cloud Account with enabled billing (it will work with free 300$ quota for new users) and created service account with Owner rights ([instruction](https://docs.google.com/document/d/1gmRiIsNa_tk31YI5CB7p2V3m3N01sKAcD5FAVaQbwpg/edit?usp=sharing).
+1. Google Cloud Account with enabled billing (it will work with free 300$ quota for new users) and created service account with Owner rights ([instruction](https://docs.google.com/document/d/1gmRiIsNa_tk31YI5CB7p2V3m3N01sKAcD5FAVaQbwpg/edit?usp=sharing)).
 2. Docker newer than v26.0> and docker-compose newer than v2.28.
 
 ## How to reproduce
-0. Create Google Cloud Account. Enable BigQuery API, enable Google Cloud Storage API.  
+0. Create Google Cloud Account and start free trial period. Google will give you 300$ free credit for 90 days that will cover expenses for testing this project (that will take 10$ from this quota at maximum). Enable Service Usage API and  (if you are logged in current browser, click [here](https://console.cloud.google.com/apis/api/serviceusage.googleapis.com/ and [here](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/), in opened tabs click _Enable_), create service account with Owner rights ([instruction](https://docs.google.com/document/d/1gmRiIsNa_tk31YI5CB7p2V3m3N01sKAcD5FAVaQbwpg/edit?usp=sharing)).  
 1. Install Docker + Docker-Compose on your machine. If needed, follow installation instructions for your system from Docker`s [documentation](https://docs.docker.com/engine/install/).
 2. Copy files from this repository or just clone it to your working directory using git.
 
-   ```git clone https://github.com/IBPhilippov/GDELT_Cooperation_Dashboard.git```
+   ```git clone https://github.com/IBPhilippov/basketball_results_prediction.git```
 3. Move to the appeared directory, i.e.
    ```cd gdelt_cooperation_dashboard```
 4. Create a service account in Google Cloud Platform, grant it Admin/Editor access to your project, create json-key (if needed, follow the [instructions](https://cloud.google.com/iam/docs/keys-create-delete)) and upload json-file with keys to the directory gdelt_cooperation_dashboard. Alternatively, you can just copy the content of json key downloaded from GCP, and paste it into the new file created by  ```nano credentials.json```
