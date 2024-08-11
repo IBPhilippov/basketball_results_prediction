@@ -98,9 +98,17 @@ returns
 
 ## What the code actually does
 ### TL;DR
-Docker Compose creates Terraform and MageAi containers and runs there some commands. Using Terraform, it creates a bucket in Google Cloud Storage, a dataset and a table inside it in BigQuery. Using Mage, it runs a pipeline that gets data from GDELT database, stores it into a bucket created by Terraform, and then uses Spark to aggregate data from the bucket and then load it into BigQuery table. 
+Docker Compose creates Terraform, MLFlow, MageAI and a couple of auxillary containers and runs there some commands. Using Terraform, it initializes all cloud infrastructure in GCP (enables APIs, creates GCS buckets, Pub/Sub topics and subscriptions, a function in Google Cloud Functions). Using MageAI, it runs a pipeline that gets data from NCAA database and uses it for training of the model. All training process inside MageAI is tracked by MLFlow that runs in a separate container and stores artifact data in GCS buckeе, while keeping operational run/registry data in Postgress. Once training is completed, user may send data for obtaining new predictions. This is performed through a python app  in deployment container. The app is triggering MageAI to send users` input to Cloud Functions via Pub/Sub, as well as a link to latest model` artifacts in GCS. Cloud Function uses this artifacts to recreate model, predict the target and send prediction back to MageAI and user. After returning prediction to a user, MageAI sends the data to the monitoring pipeline, where regression performance and data drift tests are executed. Their results are stored in MLFlow as a separate experiment. If tests results are unsatisfactory, the retraining workflow is triggered.
+
 
 ### Details
+Docker Compose creates six containers: 
+1. Container for Terraform.
+2. Container for MLFlow.
+3. Container for MageAI orchestrator.
+4. Container for Python application on Flask for model deployment.
+5. Container for Python application to trigger initial runs of MageAI pipelines.
+6. Container for Postgress for backend.
 0. The main idea was to create end-to-end portable product that requires minimal adjustments in settings (here presented by environment.env), and can be run without manual interventions. Therfore, after initial setup everything runs automatically.
 1. When you run  ```sudo docker compose --env-file=environment.env up```, docker builds and runs two docker images: Terraform image and MageAI image. 
 2. Terrafrom
