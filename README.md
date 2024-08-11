@@ -15,10 +15,12 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 2. Terraform for automated management of cloud infrastructure (IaC).
 3. [Mage.AI](https://www.mage.ai) as an orchestrator.
 4. MLflow for model tracking, experiements and model registry.
-5. Google Cloud Storage as a storage, Google BigQuery as data source.
-6. Google Pub/Sub and Google Cloud Functions for deployment. 
-7. [Evidently](https://www.evidentlyai.com) for monitoring.
-8. Postgress as backend database.
+5. Google Cloud Storage (GCS) as a storage, Google BigQuery as data source.
+   Google Cloud Storage is a Google Cloud Platform (GCP) alternative for S3 storage from Amazon Web Services (AWS).
+7. Google Pub/Sub and Google Cloud Functions for deployment.
+   Google Cloud PubSub is a fully-managed real-time messaging service, one of AWS equivalents is Lambda. 
+9. [Evidently](https://www.evidentlyai.com) for monitoring.
+10. Postgress as backend database.
 
 In practice, you need to interact only with environment.env file, Mage.Ai and Google Cloud interface to prepare the account. Everything apart from it is deployed and managed automatically. 
 
@@ -47,7 +49,8 @@ You need to insert your Google Cloud Platform project id after
 ```GCP_PROJECT_NAME=```
 and the name of the file with json-keys after
 ```GOOGLE_CREDENTIALS=```
-You can find GCP project in Google Cloud Console, for example here ![image](https://github.com/user-attachments/assets/b5bed20f-94e0-4f28-ab16-9a499ab87ec5) . So, for my project it would be
+You can find GCP project in Google Cloud Console, for example here ![image](https://github.com/user-attachments/assets/b5bed20f-94e0-4f28-ab16-9a499ab87ec5) .
+So, for my project it would be
 ```GCP_PROJECT_NAME=ibphilippov-mlops```
 
 
