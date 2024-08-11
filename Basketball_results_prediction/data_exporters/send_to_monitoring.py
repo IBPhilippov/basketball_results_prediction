@@ -22,7 +22,7 @@ def export_data(data, *args, **kwargs):
         for sh in el['schedules']:
             if sh['name']=='add_to_monitoring' and sh['schedule_type']=='api':
                 trigger_id=sh['id']
-    data =   {"pipeline_run": { "variables": { "data": data }}}
+    data =   {"pipeline_run": { "variables": { "sent_data": data }}}
     data = str(data).replace("'",'"')
     r=requests.post(url=f'http://localhost:6789/api/pipeline_schedules/{trigger_id}/pipeline_runs/96a3147e2ac749929eadac81c581d8e3', data=data)
     print(r.json())
