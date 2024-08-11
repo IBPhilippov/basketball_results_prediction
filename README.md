@@ -19,6 +19,9 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 6. Google Pub/Sub and Google Cloud Functions for deployment. 
 7. [Evidently](https://www.evidentlyai.com) for monitoring.
 8. Postgress as backend database.
+
+In practice, you need to interact only with environment.env file, Mage.Ai and Google Cloud interface to prepare the account. Everything apart from it is deployed and managed automatically. 
+
    
 ---
 ## Requirements
@@ -83,9 +86,8 @@ returns
 {"results":[-0.8319412738342693,3.353236690777813]}
 ```
     
-11. If needed, you can 
-12. 
-15. If you need to automatically delete all tables and buckets created by the project running, run
+10. If needed, you can connect to MLFlow (port 5000). Here you can see tracked experiments (1 ongoing by default named _basketball_), current prod model in model registry and results of model monitoring reports by Evidently (that are stored in experiment called _Model evaluation with Evidently_ (the idea to use MLFlow to monitor model performace and data drift taken from [Documentation by Evidently](https://docs.evidentlyai.com/integrations/evidently-and-mlflow). The latter will be created after some data will be sent to the deployment module (see previous (9) point).
+15. If you need to automatically delete all GCP resources created by the project running, run
     ```sudo docker run terraform:Dockerfile destroy -var-file varfile.tfvars -auto-approve```
 
 ---
