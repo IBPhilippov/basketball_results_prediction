@@ -17,7 +17,7 @@ def transform(data, *args, **kwargs):
         run_view_type=ViewType.ACTIVE_ONLY,
         max_results=1,
         order_by=["metrics.rmse ASC"],
-        filter_string=f'tags.train_year="{train_year}"')
+        filter_string=f'tags.train_year="{train_year}" and attributes.status = "FINISHED"')
     run_id = runs.loc[0,'run_id']
     print(run_id)
 
