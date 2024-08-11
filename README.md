@@ -24,16 +24,16 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 2. Docker newer than v26.0> and docker-compose newer than v2.28.
 
 ## How to reproduce
-0. Create Google Cloud Account and start free trial period. Google will give you 300$ free credit for 90 days that will cover expenses for testing this project (that will take 10$ from this quota at maximum). Enable Service Usage API and  (if you are logged in current browser, click [here](https://console.cloud.google.com/apis/api/serviceusage.googleapis.com/ and [here](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/), in opened tabs click _Enable_), create service account with Owner rights ([instruction](https://docs.google.com/document/d/1gmRiIsNa_tk31YI5CB7p2V3m3N01sKAcD5FAVaQbwpg/edit?usp=sharing)).  
+0. Create Google Cloud Account and start free trial period. Google will give you 300$ free credit for 90 days that will cover expenses for testing this project (that will take 10$ from this quota at maximum). Enable Service Usage API and  (if you are logged in current browser, click [here](https://console.cloud.google.com/apis/api/serviceusage.googleapis.com/ and [here](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/), in opened tabs click _Enable_), create service account with Owner rights.  
 1. Install Docker + Docker-Compose on your machine. If needed, follow installation instructions for your system from Docker`s [documentation](https://docs.docker.com/engine/install/).
 2. Copy files from this repository or just clone it to your working directory using git.
 
    ```git clone https://github.com/IBPhilippov/basketball_results_prediction.git```
 3. Move to the appeared directory, i.e.
-   ```cd gdelt_cooperation_dashboard```
-4. Create a service account in Google Cloud Platform, grant it Admin/Editor access to your project, create json-key (if needed, follow the [instructions](https://cloud.google.com/iam/docs/keys-create-delete)) and upload json-file with keys to the directory gdelt_cooperation_dashboard. Alternatively, you can just copy the content of json key downloaded from GCP, and paste it into the new file created by  ```nano credentials.json```
+   ```cd basketball_results_prediction```
+4. Create a service account in Google Cloud Platform, grant it Admin/Editor access to your project, create json-key (if needed, follow the [instructions](https://cloud.google.com/iam/docs/keys-create-delete)) and upload json-file with keys to the directory basketball_results_prediction. Alternatively, you can just copy the content of json key downloaded from GCP, and paste it into the new file created by  ```nano credentials.json```
 
-In any case, the json-key **must** be placed in the folder you downloaded from git. 
+In any case, the json-key **must** be placed in the folder you downloaded from google. 
 
 5. Change variables in environment.env accessing it in any convinient way. For example,
 ```nano environment.env```
@@ -42,21 +42,24 @@ You need to insert your Google Cloud Platform project id after
 ```GCP_PROJECT_NAME=```
 and the name of the file with json-keys after
 ```GOOGLE_CREDENTIALS=```
+You can find GCP project in Google Cloud Console, for example here ![image](https://github.com/user-attachments/assets/b5bed20f-94e0-4f28-ab16-9a499ab87ec5) . So, for my project it would be
+```GCP_PROJECT_NAME=ibphilippov-mlops```
+
 
 You can alter any variable here. Filled environment.env looks like this:
 ```
 ###Name of the file with credentials from service account###
-GOOGLE_CREDENTIALS=credentials.json
+GOOGLE_CREDENTIALS=creds.json
 ###Id of your project###
-GCP_PROJECT_NAME=myproject-id
-###Location of dataset###
+GCP_PROJECT_NAME=my-project-id
+###Location - do not alter if not needed###
 GCP_LOCATION=US
-###Name of dataset in BigQuery###
-BQ_DATASET_NAME=gdelt_cooperation
-###Postfix for bucket name to enshure uniqueness###
-ADDITIONAL_PART=999
-###Region of your project###
-DEFAULT_GCP_REGION=us-central1
+###Name of bucket in Google Cloud Storage that will contain artifact data. Should be globally unique, choose some uncommon naming. You won`t interact with it manually, so meaningful name is not required###
+ARTIFACT_STORAGE=my-artifact-storage
+###Postgress Password###
+DB_PASSWORD=example
+DB_USER=postgress_user
+DB_NAME=pgdata
 ```
 6. Run the project with docker-compose.
 
@@ -66,13 +69,23 @@ OR
 depending on the way you installed docker-compose. You may also run it in detached mode, but it will be less convienient to track the process.
 
    ```sudo docker compose --env-file=environment.env up -d```
-7. Wait some time. The commands in docker will automatically create all resourses and perform needed runs of ETL pipeline to provide you with the data for the dashboard.
-It may take from 10 minutes up to an hour depending from your machine. For example, e2-medium (25$-month instance from Google Compute Engine) will handle it in 25 minutes.
-8. Check the data in your BigQuery. A table BQ_DATASET_NAME.events should have been appeared and filled with the data.
-9. Now, using the data in BQ_DATASET_NAME.events table, you are able to create dashboard similar to [the one I created](https://lookerstudio.google.com/reporting/0eccaab5-235b-4647-abe2-1e529c9b72b2/page/ZCpwD).
-10. (Optional) After the initial runs of pipeline are completed, the docker container with MageAI image listens the port 6789. If you forward it to your local machine, you will be able to run pipelines manually/change them using Mage`s UI on http://localhost:6789/ .
-11. If you keep a docker container running, the data will be updated hourly (the trigger for the pipeline will be created automatically).
-12. If you need to automatically delete all tables and buckets created by the project running, run
+7. Wait some time. The commands in docker will automatically create all resourses and perform needed runs of data extraction pipeline and sklearn training pipeline.
+It may take from 10 minutes up to an hour depending from your machine. For example, c2-standard-4 (4 vCPU, 2 core, 16 GB memory)  instance from Google Compute Engine will handle it in 15 minutes.
+8. Check the pipeline status im MageAI UI (you can forward port 6789 and open http://localhost:6789/ in your browser, otherwise you need to connect to http://{your_machine_ip}:6789/. In UI you can observe that pipelines get_data_from_bq and train_sklearn were executed successfully.
+9. Now you may send the data to the deployment module (serving at port 9696) via POST request and recieve the prediction in return. For example:
+    ```
+    curl -X POST http://0.0.0.0:9696/predict --header 'Content-Type: application/json' --json '[{"h_three_points_pct": 64.8,"h_three_points_att": 63.0, "h_two_points_pct": 41.0, "h_two_points_att": 39.0, "h_offensive_rebounds": 5.0, "h_defensive_rebounds": 30.0, "h_turnovers": 9.0,"h_steals": 0.0, "h_blocks": 4.0, "h_personal_fouls": 15.0, "h_points": 70.0, "a_three_points_pct": 41.7, "a_three_points_att": 12.0,"a_two_points_pct": 46.3, "a_two_points_att": 54.0, "a_offensive_rebounds": 5.0, "a_defensive_rebounds": 27.0, "a_turnovers": 20.0,"a_steals": 2.0,"a_blocks": 5.0, "a_personal_fouls": 5.0, "a_points": 99.0},{"h_three_points_pct": 64.8,"h_three_points_att": 23.0, "h_two_points_pct": 41.0, "h_two_points_att": 39.0, "h_offensive_rebounds": 5.0, "h_defensive_rebounds": 30.0, "h_turnovers": 9.0,"h_steals": 0.0, "h_blocks": 4.0, "h_personal_fouls": 15.0, "h_points": 70.0, "a_three_points_pct": 41.7, "a_three_points_att": 12.0,"a_two_points_pct": 46.3, "a_two_points_att": 54.0, "a_offensive_rebounds": 5.0, "a_defensive_rebounds": 27.0, "a_turnovers": 20.0,"a_steals": 2.0,"a_blocks": 5.0, "a_personal_fouls": 5.0, "a_points": 99.0}]'
+   ```
+returns
+```
+{"results":[-0.8319412738342693,3.353236690777813]}
+```
+    
+11. f
+12. 
+13. (Optional) After the initial runs of pipeline are completed, the docker container with MageAI image listens the port 6789. If you forward it to your local machine, you will be able to run pipelines manually/change them using Mage`s UI on http://localhost:6789/ .
+14. If you keep a docker container running, the data will be updated hourly (the trigger for the pipeline will be created automatically).
+15. If you need to automatically delete all tables and buckets created by the project running, run
     ```sudo docker run terraform:Dockerfile destroy -var-file varfile.tfvars -auto-approve```
 
 ---
@@ -107,6 +120,5 @@ The operations performed by Terraform are defined in /terraform/Dockerfile
    
 The pipeline is run from docker-compose command instruction. Preparation of Mage image to use Spark is defined in /mage/Dockerfile.
 The mage project code is stored in /gdelt_cooperation/. 
-## Dashboard Example
 
 
