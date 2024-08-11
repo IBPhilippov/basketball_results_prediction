@@ -11,12 +11,14 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 
 ## Tools
 
-1. Docker/Docker Compose for conteinerization and easy deployment
+1. Docker/Docker Compose for conteinerization and easy deployment.
 2. Terraform for automated management of cloud infrastructure (IaC).
 3. [Mage.AI](https://www.mage.ai) as an orchestrator.
-4. Google Cloud Storage as a storage, Google BigQuery as data source.
-5. Google Pub/Sub and Google Cloud Functions for deployment. 
-6. [Evidently](https://www.evidentlyai.com) for monitoring.
+4. MLflow for model tracking, experiements and model registry.
+5. Google Cloud Storage as a storage, Google BigQuery as data source.
+6. Google Pub/Sub and Google Cloud Functions for deployment. 
+7. [Evidently](https://www.evidentlyai.com) for monitoring.
+8. Postgress as backend database.
    
 ---
 ## Requirements
@@ -81,10 +83,8 @@ returns
 {"results":[-0.8319412738342693,3.353236690777813]}
 ```
     
-11. f
+11. If needed, you can 
 12. 
-13. (Optional) After the initial runs of pipeline are completed, the docker container with MageAI image listens the port 6789. If you forward it to your local machine, you will be able to run pipelines manually/change them using Mage`s UI on http://localhost:6789/ .
-14. If you keep a docker container running, the data will be updated hourly (the trigger for the pipeline will be created automatically).
 15. If you need to automatically delete all tables and buckets created by the project running, run
     ```sudo docker run terraform:Dockerfile destroy -var-file varfile.tfvars -auto-approve```
 
