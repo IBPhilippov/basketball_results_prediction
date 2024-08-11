@@ -18,7 +18,8 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 5. Google Cloud Storage (GCS) as a storage, Google BigQuery as data source.
    Google Cloud Storage is a Google Cloud Platform (GCP) alternative for S3 storage from Amazon Web Services (AWS).
 7. Google Pub/Sub and Google Cloud Functions for deployment.
-   Google Cloud PubSub is a fully-managed real-time messaging service, one of AWS equivalents is Lambda. 
+   Google Cloud PubSub is a fully-managed real-time messaging service, analogous to SQS/Kinesis in AWS.
+   Google Cloud Functions is Google's serverless compute solution, equivalent to  Lambda in AWS.
 9. [Evidently](https://www.evidentlyai.com) for monitoring.
 10. Postgress as backend database.
 
