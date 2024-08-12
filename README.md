@@ -125,9 +125,68 @@ Terrafrom
 #### MLFlow
 Docker passes **GOOGLE_CREDENTIALS** in a container for MLFlow, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach MLFlow UI on port 5000, but the project workflow itself adresses it only from Mage.AI container. Both experiment tracking and model registry functionality are used. Apart from this, MLFlow is also used for model monitoring, storing runs of Evidently.AI reports.
 #### MageAI
-MageAI application is created from MageAI Docker image and four prepared pipelines inside a project named _Basketball_results_prediction_, that are stored in /Basketball_results_prediction/. Each pipeline contains API trigger that allows remote initiation of new pipeline runs with given parameters. This triggers are used to ensure the communication between pipelines.
+MageAI application is created from MageAI Docker image and four prepared pipelines inside a project named _Basketball_results_prediction_ stored in /Basketball_results_prediction/. Each pipeline contains API trigger that allows remote initiation of new pipeline runs with given parameters. This triggers are used to ensure the communication between pipelines.
 1. _get_data_from_bq_ pipeline extracts data from ncaa_basketball public dataset in BigQuery. The connection between MageAI and GCP here (and everywhere else in this project) is made possible due to **GOOGLE_CREDENTIALS** that are passed from local folder to container during Docker Build process.
-2. 
+The SQL-query for data extraction:
+```SELECT 
+  team_id, 
+  gametime, 
+  game_id,
+  LAG(three_points_pct) OVER team AS three_points_pct,
+  LAG(three_points_att) OVER team AS three_points_att,
+  LAG(two_points_pct) OVER team AS two_points_pct,
+  LAG(two_points_att) OVER team AS two_points_att,
+  LAG(offensive_rebounds) OVER team AS offensive_rebounds,
+  LAG(defensive_rebounds) OVER team AS defensive_rebounds,
+  LAG(turnovers) OVER team AS turnovers,
+  LAG(steals) OVER team AS steals,
+  LAG(blocks) OVER team AS blocks,
+  LAG(personal_fouls) OVER team AS personal_fouls,
+  LAG(points) OVER team AS points,
+  LAG(gametime) OVER team AS gametime_lag,
+  LAG(game_id) OVER team AS game_id_lag
+  FROM bigquery-public-data.ncaa_basketball.mbb_teams_games_sr
+  WHERE EXTRACT(year FROM gametime)={**year**} AND coverage='full'
+  WINDOW team AS (PARTITION BY team_id ORDER BY gametime ASC))
+
+SELECT
+  games.game_id,
+  pg_h.three_points_pct AS h_three_points_pct,
+  pg_h.three_points_att AS h_three_points_att,
+  pg_h.two_points_pct as h_two_points_pct,
+  pg_h.two_points_att as h_two_points_att,
+  pg_h.offensive_rebounds as h_offensive_rebounds,
+  pg_h.defensive_rebounds as h_defensive_rebounds,
+  pg_h.turnovers as h_turnovers,
+  pg_h.steals as h_steals,
+  pg_h.blocks as h_blocks,
+  pg_h.personal_fouls as h_personal_fouls ,
+  games.h_points as h_points,
+  pg_a.three_points_pct as a_three_points_pct,
+  pg_a.three_points_att as a_three_points_att,
+  pg_a.two_points_pct as a_two_points_pct,
+  pg_a.two_points_att as a_two_points_att,
+  pg_a.offensive_rebounds as a_offensive_rebounds,
+  pg_a.defensive_rebounds as a_defensive_rebounds,
+  pg_a.turnovers as a_turnovers,
+  pg_a.steals as a_steals,
+  pg_a.blocks as a_blocks,
+  pg_a.personal_fouls as a_personal_fouls,
+  games.a_points as a_points
+ 
+FROM
+  bigquery-public-data.ncaa_basketball.mbb_games_sr games
+  JOIN previous_games pg_h ON games.h_id=pg_h.team_id AND games.game_id=pg_h.game_id
+  JOIN previous_games pg_a ON games.a_id=pg_a.team_id AND games.game_id=pg_a.game_id
+
+WHERE
+  EXTRACT(year FROM games.gametime)={**year**}
+  AND pg_h.game_id_lag IS NOT NULL
+  AND pg_a.game_id_lag IS NOT NULL```
+
+, where **year** - is a parameter coming from the pipeline. Each pipeline run this query is excecuted twice for two different years: to obtain train and validation data. Than the data is preprocessed, so that pipeline separately returns train data features, validation data features, train data targets, validation data targets and the metadata for pipeline run. After data preprocessing is over, the last block of this pipeline triggers the execution of the next pipeline.
+
+3. 
 Docker passes **GOOGLE_CREDENTIALS** in a container for MageAI, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach it on port 5000, but the project workflow itself adresses it only from Mage.AI container.
 
 
