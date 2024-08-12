@@ -29,7 +29,7 @@ In practice, you need to interact only with environment.env file, Mage.Ai and Go
 ---
 ## Requirements
 1. Google Cloud Account with enabled billing (it will work with free 300$ quota for new users) and created service account with Owner rights ([instruction](https://docs.google.com/document/d/1gmRiIsNa_tk31YI5CB7p2V3m3N01sKAcD5FAVaQbwpg/edit?usp=sharing)).
-2. Docker newer than v26.0> and docker-compose newer than v2.28.
+2. Docker newer than v26.0 and docker-compose newer than v2.28.
 
 ## How to reproduce
 0. Create Google Cloud Account and start free trial period. Google will give you 300$ free credit for 90 days that will cover expenses for testing this project (that will take 10$ from this quota at maximum). Enable Service Usage API and  (if you are logged in current browser, click [here](https://console.cloud.google.com/apis/api/serviceusage.googleapis.com/ and [here](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/), in opened tabs click _Enable_), create service account with Owner rights.  
@@ -125,7 +125,10 @@ Terrafrom
 #### MLFlow
 Docker passes **GOOGLE_CREDENTIALS** in a container for MLFlow, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach MLFlow UI on port 5000, but the project workflow itself adresses it only from Mage.AI container. Both experiment tracking and model registry functionality are used. Apart from this, MLFlow is also used for model monitoring, storing runs of Evidently.AI reports.
 #### MageAI
-Docker passes **GOOGLE_CREDENTIALS** in a container for MLFlow, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach it on port 5000, but the project workflow itself adresses it only from Mage.AI container.
+MageAI application is created from MageAI Docker image and four prepared pipelines inside a project named _Basketball_results_prediction_, that are stored in /Basketball_results_prediction/. Each pipeline contains API trigger that allows remote initiation of new pipeline runs with given parameters. This triggers are used to ensure the communication between pipelines.
+1. _get_data_from_bq_ pipeline extracts data from ncaa_basketball public dataset in BigQuery. The connection between MageAI and GCP here (and everywhere else in this project) is made possible due to **GOOGLE_CREDENTIALS** that are passed from local folder to container during Docker Build process.
+2. 
+Docker passes **GOOGLE_CREDENTIALS** in a container for MageAI, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach it on port 5000, but the project workflow itself adresses it only from Mage.AI container.
 
 
 
