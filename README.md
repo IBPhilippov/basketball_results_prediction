@@ -185,10 +185,9 @@ WHERE
   AND pg_h.game_id_lag IS NOT NULL
   AND pg_a.game_id_lag IS NOT NULL```
 
-, where **year** - is a parameter coming from the pipeline. Each pipeline run this query is excecuted twice for two different years: to obtain train and validation data. Than the data is preprocessed, so that pipeline separately returns train data features, validation data features, train data targets, validation data targets and the metadata for pipeline run. After data preprocessing is over, the last block of this pipeline triggers the execution of the next pipeline.
-
-3. 
-Docker passes **GOOGLE_CREDENTIALS** in a container for MageAI, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach it on port 5000, but the project workflow itself adresses it only from Mage.AI container.
+, here h-prefixed fields are game statistics parameters for the last game home team (except points that are for current games and essentialy form target for the model), a-prefixed fields are the same for away team, and **year** - is a parameter coming from the pipeline. Each pipeline run this query is excecuted twice for two different years: to obtain train and validation data. On the next step, the data is preprocessed in a way that pipeline separately returns train data features, validation data features, train data targets (h_paints - a_points), validation data targets and the metadata for pipeline run. After data preprocessing is over, the last block of this pipeline triggers the execution of the next pipeline.
+2. _train_sklearn_ pipeline uses scikit-learn and hyperopt python libraries to tune ML model of different specifications and choose the one that shows best results on validation. Each tested model specification is logged in MLFlow with its metadata, performance metrics and artifacts. After all specifications with all examined set of hyperparameters are evaluated, the best performing model is put to model registry. 
+3. _deployment_ pipeline is the only pipeline in this project that can`t be triggered inside the project (i.e. by other pipelines), but reacts to an external call. This call is managed by application in container 4 and is triggered by user`s POST requests on port 9696. If payload of the request is in correct form (i.e. contains all fields - see query in first pipeline).
 
 
 
