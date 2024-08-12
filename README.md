@@ -128,7 +128,8 @@ Docker passes **GOOGLE_CREDENTIALS** in a container for MLFlow, so that MLFlow i
 MageAI application is created from MageAI Docker image and four prepared pipelines inside a project named _Basketball_results_prediction_ stored in /Basketball_results_prediction/. Each pipeline contains API trigger that allows remote initiation of new pipeline runs with given parameters. This triggers are used to ensure the communication between pipelines.
 1. _get_data_from_bq_ pipeline extracts data from ncaa_basketball public dataset in BigQuery. The connection between MageAI and GCP here (and everywhere else in this project) is made possible due to **GOOGLE_CREDENTIALS** that are passed from local folder to container during Docker Build process.
 The SQL-query for data extraction:
-```SELECT 
+```WITH previous_games as
+  SELECT 
   team_id, 
   gametime, 
   game_id,
@@ -146,7 +147,7 @@ The SQL-query for data extraction:
   LAG(gametime) OVER team AS gametime_lag,
   LAG(game_id) OVER team AS game_id_lag
   FROM bigquery-public-data.ncaa_basketball.mbb_teams_games_sr
-  WHERE EXTRACT(year FROM gametime)={**year**} AND coverage='full'
+  WHERE EXTRACT(year FROM gametime)={year} AND coverage='full'
   WINDOW team AS (PARTITION BY team_id ORDER BY gametime ASC))
 
 SELECT
@@ -180,7 +181,7 @@ FROM
   JOIN previous_games pg_a ON games.a_id=pg_a.team_id AND games.game_id=pg_a.game_id
 
 WHERE
-  EXTRACT(year FROM games.gametime)={**year**}
+  EXTRACT(year FROM games.gametime)={year}
   AND pg_h.game_id_lag IS NOT NULL
   AND pg_a.game_id_lag IS NOT NULL```
 
