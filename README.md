@@ -58,7 +58,7 @@ So, for my project it would be
 You can alter any variable here. Filled environment.env looks like this:
 ```
 ###Name of the file with credentials from service account###
-GOOGLE_CREDENTIALS=creds.json
+GOOGLE_CREDENTIALS=credentials.json
 ###Id of your project###
 GCP_PROJECT_NAME=my-project-id
 ###Location - do not alter if not needed###
@@ -91,17 +91,22 @@ returns
 ```
     
 10. If needed, you can connect to MLFlow (port 5000). Here you can see tracked experiments (1 ongoing by default named _basketball_), current prod model in model registry and results of model monitoring reports by Evidently (that are stored in experiment called _Model evaluation with Evidently_ (the idea to use MLFlow to monitor model performace and data drift taken from [Documentation by Evidently](https://docs.evidentlyai.com/integrations/evidently-and-mlflow). The latter will be created after some data will be sent to the deployment module (see previous (9) point).
-15. If you need to automatically delete all GCP resources created by the project running, run
+11. If you need to automatically delete all GCP resources created by the project running, run
     ```sudo docker run terraform:Dockerfile destroy -var-file varfile.tfvars -auto-approve```
 
 ---
 
 ## What the code actually does
 ### TL;DR
-Docker Compose creates Terraform, MLFlow, MageAI and a couple of auxillary containers and runs there some commands. Using Terraform, it initializes all cloud infrastructure in GCP (enables APIs, creates GCS buckets, Pub/Sub topics and subscriptions, a function in Google Cloud Functions). Using MageAI, it runs a pipeline that gets data from NCAA database and uses it for training of the model. All training process inside MageAI is tracked by MLFlow that runs in a separate container and stores artifact data in GCS buckeе, while keeping operational run/registry data in Postgress. Once training is completed, user may send data for obtaining new predictions. This is performed through a python app  in deployment container. The app is triggering MageAI to send users' input to Cloud Functions via Pub/Sub, as well as a link to latest model's artifacts in GCS. Cloud Function uses this artifacts to recreate model, predict the target and send prediction back to MageAI and user. After returning prediction to a user, MageAI sends the data to the monitoring pipeline, where regression performance and data drift tests are executed. Their results are stored in MLFlow as a separate experiment. If tests results are unsatisfactory, the retraining workflow is triggered with newer data.
+Docker Compose creates Terraform, MLFlow, MageAI and a couple of auxillary containers and runs there some commands. **Using Terraform, it initializes all cloud infrastructure in GCP** (enables APIs, creates GCS buckets, Pub/Sub topics and subscriptions, a function in Google Cloud Functions). 
+Using MageAI **as an orchestrator**, it runs a pipeline that gets data from NCAA database and uses it for training of the model. All training process inside MageAI **are tracked by MLFlow** that runs in a separate container and stores artifact data in GCS bucket, while keeping operational run/registry data in Postgress.
+Once training is completed and prod model is stored in **model registry**, user may send data for obtaining new predictions. This is performed through a **python app in deployment container**. The app is triggering MageAI to send users' input to Cloud Functions via Pub/Sub, as well as a link to latest model's artifacts in GCS. Cloud Function uses this artifacts to recreate model, predict the target and send prediction back to MageAI and user. After returning prediction to a user, MageAI sends the data to the **monitoring pipeline**, where regression performance and data drift tests are executed. Their results are stored in MLFlow as a separate experiment. If tests results are unsatisfactory, the **retraining workflow** is triggered with newer data.
 
 
 ### Details
+The main idea was to create end-to-end portable product that requires minimal adjustments in settings (here presented by environment.env), and can be run without manual interventions. Therfore, after initial setup everything runs automatically.
+
+#### Containers
 Docker Compose creates six containers: 
 1. Container for Terraform.
 2. Container for MLFlow.
@@ -109,12 +114,21 @@ Docker Compose creates six containers:
 4. Container for Python application on Flask for model deployment.
 5. Container for Python application to trigger initial runs of MageAI pipelines.
 6. Container for Postgress for backend.
-0. The main idea was to create end-to-end portable product that requires minimal adjustments in settings (here presented by environment.env), and can be run without manual interventions. Therfore, after initial setup everything runs automatically.
-1. When you run  ```sudo docker compose --env-file=environment.env up```, docker builds and runs two docker images: Terraform image and MageAI image. 
-2. Terrafrom
-   - creates a bucket on a project specified in environment.env after **GCP_PROJECT_NAME**. The bucket is called as a concatenation of GCP_PROJECT_NAME, BQ_DATASET_NAME and ADDITIONAL_PART specified in  environment.env. The bucket name is complex due to the requirements of uniqueness across GCP. If you face with error, indicating that such bucket already exists, please change ADDITIONAL_PART (any combination of letters and numbers will work).
-   - creates a datased called **BQ_DATASET_NAME** . The dataset should be non-existing before run, otherwise and error will be raised.
-   - creates a table **BQ_DATASET_NAME.events** partitioned by _DateEvent_ and clustered by _Year_ and _Event_. The field _Year_ will be used below to delete and upload data, the field _Event_  will be used to group data in groups for dashboard representation.
+
+#### Terraform
+Terrafrom
+   - using credentials file specified after **GOOGLE_CREDENTIALS** in environment.env, connects to a project specified after **GCP_PROJECT_NAME**.
+   - enables in a project a number of API`s (full list in /terraform/variables.tf).
+   - creates a bucket in a project specified after **GCP_PROJECT_NAME** in environment.env. The bucket is called after **ARTIFACT_STORAGE** in  environment.env.
+   - creates two pub/sub topics: 1) _predictions-input_ and 2) _predictions-output_.
+   - creates function _make_prediction_ in Google Cloud Functions. _make_prediction_ is triggered by any incoming messages in _predictions-input_ and runs a python script defined in /terraform/function_source/main.py. The result of this function is sent to _predictions-output_ topic and stored in **ARTIFACT_STORAGE** bucket.
+#### MLFlow
+Docker passes **GOOGLE_CREDENTIALS** in a container for MLFlow, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach MLFlow UI on port 5000, but the project workflow itself adresses it only from Mage.AI container. Both experiment tracking and model registry functionality are used. Apart from this, MLFlow is also used for model monitoring, storing runs of Evidently.AI reports.
+#### MageAI
+Docker passes **GOOGLE_CREDENTIALS** in a container for MLFlow, so that MLFlow is connected to an **ARTIFACT_STORAGE** bucket for storing models` artifacts and to Postgress container to store run/operational data. User may reach it on port 5000, but the project workflow itself adresses it only from Mage.AI container.
+
+
+
 The operations performed by Terraform are defined in /terraform/Dockerfile
 4. Mage.AI creates a project called _gdelt_cooperation_ and pipeline called _gdelt_spark_. It runs the pipeline five times ranging the _year_ variable from 2019 to 2024, and creates a trigger that will run pipeline on hourly basis (with _year_ =2024).
 5. During each run, the pipeline
