@@ -183,7 +183,8 @@ FROM
 WHERE
   EXTRACT(year FROM games.gametime)={year}
   AND pg_h.game_id_lag IS NOT NULL
-  AND pg_a.game_id_lag IS NOT NULL```
+  AND pg_a.game_id_lag IS NOT NULL
+```
 
 , here h-prefixed fields are game statistics parameters for the last game home team (except points that are for current games and essentialy form target for the model), a-prefixed fields are the same for away team, and **year** - is a parameter coming from the pipeline. Each pipeline run this query is excecuted twice for two different years: to obtain train and validation data. On the next step, the data is preprocessed in a way that pipeline separately returns train data features, validation data features, train data targets (h_paints - a_points), validation data targets and the metadata for pipeline run. After data preprocessing is over, the last block of this pipeline triggers the execution of the next pipeline.
 2. _train_sklearn_ pipeline uses scikit-learn and hyperopt python libraries to tune ML model of different specifications and choose the one that shows best results on validation. Each tested model specification is logged in MLFlow with its metadata, performance metrics and artifacts. After all specifications with all examined set of hyperparameters are evaluated, the best performing model is put to model registry. 
