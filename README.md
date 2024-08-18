@@ -32,7 +32,7 @@ In practice, you need to interact only with environment.env file, Mage.Ai and Go
 2. Docker newer than v26.0 and docker-compose newer than v2.28.
 
 ## How to reproduce
-0. Create Google Cloud Account and start free trial period. Google will give you 300$ free credit for 90 days that will cover expenses for testing this project (that will take 10$ from this quota at maximum). Enable Service Usage API and  (if you are logged in current browser, click [here](https://console.cloud.google.com/apis/api/serviceusage.googleapis.com/ and [here](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/), in opened tabs click _Enable_), create service account with Owner rights.  
+0. Create Google Cloud Account and start free trial period. Google will give you 300$ free credit for 90 days that will cover expenses for testing this project (that will take 10$ from this quota at maximum). Enable Service Usage API and  (if you are logged in current browser, click [here](https://console.cloud.google.com/apis/api/serviceusage.googleapis.com/) and [here](https://console.cloud.google.com/apis/api/cloudresourcemanager.googleapis.com/), in opened tabs click _Enable_), create service account with Owner rights.  
 1. Install Docker + Docker-Compose on your machine. If needed, follow installation instructions for your system from Docker`s [documentation](https://docs.docker.com/engine/install/).
 2. Copy files from this repository or just clone it to your working directory using git.
 
@@ -190,28 +190,12 @@ WHERE
 2. _train_sklearn_ pipeline uses scikit-learn and hyperopt python libraries to tune ML model of different specifications and choose the one that shows best results on validation. Each tested model specification is logged in MLFlow with its metadata, performance metrics and artifacts. After all specifications with all examined set of hyperparameters are evaluated, the best performing model is put to model registry. 
 3. _deployment_ pipeline is the only pipeline in this project that can`t be triggered inside the project (i.e. by other pipelines), but reacts to an external call. This call is managed by an application in container 4 and is triggered by user`s POST requests on port 9696. This pipeline puts incoming data  from POST request and location of the artifacts of the latest model from model registry to _predictions-input_ topic in Pub/Sub, where it immideately triggers the execution of _make_prediction_ in the Cloud Functions. The function will load the model from GCS using data from registry and apply it to make predictions from incoming data. If payload of the user`s request is correct (i.e. contains all fields - see query in the first pipeline), after the excecution of _make_prediction_ the models`  predictions will be returned to _predictions-output_ topic in Pub/Sub and saved in GCS. The message from Pub/Sub then will be passed to _monitoring_ pipeline, and the content of the file in GCS returned to user who initally sent request.
 4. _monitoring_ pipeline runs regressions performance and data drift reports on grounds of Evidenlty. After each report run, it stores it`s result and metadata as an MLFlow-run in separate experiment. After all tests are done and their results logged, the pipeline checks wheter a data drift is detected or a significant decline in regression performance on a testing data with n>150 (i.e. it searches in a list of runs in experiment _Model evaluation with Evidently_ such run, where number of cases>150, either data drift is detected or significant reduction of predictive power is detected, and model`s metadata is equal to the one of prod model in model registry). If something is discovered, the retraining is called (i.e. _get_data_from_bq_ with updated parameters is triggered - and _train_sklearn_ consequently as well). 
+#### Deployment
+The python script in Docker runs using flask and unicorn serves at port 9696. It handles POST-requests with data point payloads and redirects them to the _deployment_ pipeline in MageAI. After pipeline is initiated, the script awaits it`s completion, and, reads results from GCS bucket, and returns it back to user.
+#### Auxillary - Pipeline Initiation
+The python script in Docker runs after MageAI container is started. It triggers first execution of _get_data_from_bq_ pipeline and waits 100 seconds before triggering _train_sklearn_ pipeline.
 
 
 
-
-The operations performed by Terraform are defined in /terraform/Dockerfile
-4. Mage.AI creates a project called _gdelt_cooperation_ and pipeline called _gdelt_spark_. It runs the pipeline five times ranging the _year_ variable from 2019 to 2024, and creates a trigger that will run pipeline on hourly basis (with _year_ =2024).
-5. During each run, the pipeline
-  - recieves data from public GDELT-database in BQ using the query
-``` SELECT DISTINCT GLOBALEVENTID, _PARTITIONTIME as EventTimestamp, MonthYear, Year, EventCode, Actor1CountryCode, Actor2CountryCode, Actor1Type1Code, Actor2Type1Code 
-      FROM `gdelt-bq.gdeltv2.events_partitioned`
-      WHERE EXTRACT(YEAR FROM (TIMESTAMP_TRUNC(_PARTITIONTIME, DAY))) = {year}
-      and EventRootCode='06' ###06 is a root code for material cooperation events
-      and IsRootEvent=1 ###we need only root events, not followups or discussion
-      and IFNULL(Actor1CountryCode,'')!=IFNULL(Actor2CountryCode,'') ###the interactions should be international
-```
-   - ingests data into a bucket in data lake created by terraform
-   - reads data from bucket, initiates the spark session
-   - gets the dictionaries of codes from GDELT-project site using requests-module.
-   - using Spark, joins dictionaries with the data on events, and then aggregates data, counting number of unique events per each type, each actor couple, each county per day.
-   - inserts aggregated data into table **GCP_PROJECT_NAME.BQ_DATASET_NAME.events** in BigQuery.
-   
-The pipeline is run from docker-compose command instruction. Preparation of Mage image to use Spark is defined in /mage/Dockerfile.
-The mage project code is stored in /gdelt_cooperation/. 
 
 
