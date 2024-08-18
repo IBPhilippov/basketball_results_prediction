@@ -9,3 +9,4 @@ xgboost
 google-cloud-storage
 google-cloud-pubsub
 evidently
+nltk==3.8.1
