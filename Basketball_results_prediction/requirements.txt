@@ -8,5 +8,5 @@ shap
 xgboost
 google-cloud-storage
 google-cloud-pubsub
-evidently
+evidently==0.4.24
 nltk==3.8.1
