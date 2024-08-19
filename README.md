@@ -196,6 +196,8 @@ WHERE
 The python script in Docker runs using flask and unicorn serves at port 9696. It handles POST-requests with data point payloads and redirects them to the _deployment_ pipeline in MageAI. After pipeline is initiated, the script awaits its completion, and, reads results from GCS bucket, and returns it back to user.
 #### Auxillary - Pipeline Initiation
 The python script in Docker runs after MageAI container is started. It triggers first execution of _get_data_from_bq_ pipeline and waits 100 seconds before triggering _train_sklearn_ pipeline.
+#### Auxillary - Postgress
+The database for MLFlow data (not artifacts) is initialized from basic postgress image. 
 
 
 
