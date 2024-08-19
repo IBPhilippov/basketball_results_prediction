@@ -4,7 +4,7 @@ This repository contains the final project completed for the MLOps zoomcamp cour
 ## Problem
 
 This project is dedicated to the prediction of basketball games results basing of last match performances by to rival teams. Such prediction can be of interest 
-itself (for example, for those who are betting), but may also be used for detailed analysis: sport analysts, coaches and basketball players can use it to predict how team's performance would be affected by changes in attacking precision, defending intensity, foul propensity etc. 
+itself (for example, for those who are betting), but may also be used for detailed analysis: sport analysts, coaches and basketball players can use it to predict how team's performance would be affected by changes in attacking precision, defending intensity, foul propensity etc. The value predicted is the difference in points between home and away teams.
 
 ---
 ## Data
