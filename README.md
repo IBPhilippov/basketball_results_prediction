@@ -3,7 +3,8 @@ This repository contains the final project completed for the MLOps zoomcamp cour
 
 ## Problem
 
-This project is dedicated to the prediction of basketball games results basing of last match performances by to rival teams. Such prediction can be of interest by itsleft (for example, for those who are betting), but may also be used for detailed analysis: sport analysts, coaches and basketball players can use it to predict how team's performance would be affected by changes in attacking precision, defending intensity, foul propensity and etc. 
+This project is dedicated to the prediction of basketball games results basing of last match performances by to rival teams. Such prediction can be of interest 
+itself (for example, for those who are betting), but may also be used for detailed analysis: sport analysts, coaches and basketball players can use it to predict how team's performance would be affected by changes in attacking precision, defending intensity, foul propensity etc. 
 
 ---
 ## Data
@@ -11,10 +12,10 @@ The data for project is obtained from the NCAA (National Collegiate Athletic Ass
 
 ## Tools
 
-1. Docker/Docker Compose for conteinerization and easy deployment.
+1. Docker/Docker Compose for containerization and easy deployment.
 2. Terraform for automated management of cloud infrastructure (IaC).
 3. [Mage.AI](https://www.mage.ai) as an orchestrator.
-4. MLflow for model tracking, experiements and model registry.
+4. MLflow for model tracking, experiments and model registry.
 5. Google Cloud Storage (GCS) as a storage, Google BigQuery as data source.
    Google Cloud Storage is a Google Cloud Platform (GCP) alternative for S3 storage from Amazon Web Services (AWS).
 7. Google Pub/Sub and Google Cloud Functions for deployment.
@@ -43,7 +44,7 @@ In practice, you need to interact only with environment.env file, Mage.Ai and Go
 
 In any case, the json-key **must** be placed in the folder you downloaded from google. 
 
-5. Change variables in environment.env accessing it in any convinient way. For example,
+5. Change variables in environment.env accessing it in any convenient way. For example,
 ```nano environment.env```
 Before you fill it
 You need to insert your Google Cloud Platform project id after
@@ -78,10 +79,10 @@ OR
 depending on the way you installed docker-compose. You may also run it in detached mode, but it will be less convienient to track the process.
 
    ```sudo docker compose --env-file=environment.env up -d```
-7. Wait some time. The commands in docker will automatically create all resourses and perform needed runs of data extraction pipeline and sklearn training pipeline.
-It may take from 10 minutes up to an hour depending from your machine. For example, c2-standard-4 (4 vCPU, 2 core, 16 GB memory)  instance from Google Compute Engine will handle it in 15 minutes.
+7. Wait some time. The commands in docker will automatically create all resources and perform needed runs of data extraction pipeline and sklearn training pipeline.
+It may take from 10 minutes up to an hour depending on your machine. For example, c2-standard-4 (4 vCPU, 2 core, 16 GB memory)  instance from Google Compute Engine will handle it in 15 minutes.
 8. Check the pipeline status im MageAI UI (you can forward port 6789 and open http://localhost:6789/ in your browser, otherwise you need to connect to http://{your_machine_ip}:6789/. In UI you can observe that pipelines get_data_from_bq and train_sklearn were executed successfully.
-9. Now you may send the data to the deployment module (serving at port 9696) via POST request and recieve the prediction in return. For example:
+9. Now you may send the data to the deployment module (serving at port 9696) via POST request and receive the prediction in return. For example:
     ```
     curl -X POST http://0.0.0.0:9696/predict --header 'Content-Type: application/json' --json '[{"h_three_points_pct": 64.8,"h_three_points_att": 63.0, "h_two_points_pct": 41.0, "h_two_points_att": 39.0, "h_offensive_rebounds": 5.0, "h_defensive_rebounds": 30.0, "h_turnovers": 9.0,"h_steals": 0.0, "h_blocks": 4.0, "h_personal_fouls": 15.0, "h_points": 70.0, "a_three_points_pct": 41.7, "a_three_points_att": 12.0,"a_two_points_pct": 46.3, "a_two_points_att": 54.0, "a_offensive_rebounds": 5.0, "a_defensive_rebounds": 27.0, "a_turnovers": 20.0,"a_steals": 2.0,"a_blocks": 5.0, "a_personal_fouls": 5.0, "a_points": 99.0},{"h_three_points_pct": 64.8,"h_three_points_att": 23.0, "h_two_points_pct": 41.0, "h_two_points_att": 39.0, "h_offensive_rebounds": 5.0, "h_defensive_rebounds": 30.0, "h_turnovers": 9.0,"h_steals": 0.0, "h_blocks": 4.0, "h_personal_fouls": 15.0, "h_points": 70.0, "a_three_points_pct": 41.7, "a_three_points_att": 12.0,"a_two_points_pct": 46.3, "a_two_points_att": 54.0, "a_offensive_rebounds": 5.0, "a_defensive_rebounds": 27.0, "a_turnovers": 20.0,"a_steals": 2.0,"a_blocks": 5.0, "a_personal_fouls": 5.0, "a_points": 99.0}]'
    ```
@@ -90,7 +91,7 @@ returns
 {"results":[-0.8319412738342693,3.353236690777813]}
 ```
     
-10. If needed, you can connect to MLFlow (port 5000). Here you can see tracked experiments (1 ongoing by default named _basketball_), current prod model in model registry and results of model monitoring reports by Evidently (that are stored in experiment called _Model evaluation with Evidently_ (the idea to use MLFlow to monitor model performace and data drift taken from [Documentation by Evidently](https://docs.evidentlyai.com/integrations/evidently-and-mlflow). The latter will be created after some data will be sent to the deployment module (see previous (9) point).
+10. If needed, you can connect to MLFlow (port 5000). Here you can see tracked experiments (1 ongoing by default named _basketball_), current prod model in model registry and results of model monitoring reports by Evidently (that are stored in experiment called _Model evaluation with Evidently_ (the idea to use MLFlow to monitor model performance and data drift taken from [Documentation by Evidently](https://docs.evidentlyai.com/integrations/evidently-and-mlflow). The latter will be created after some data will be sent to the deployment module (see previous (9) point).
 11. If you need to automatically delete all GCP resources created by the project running, run
     ```sudo docker run terraform:Dockerfile destroy -var-file varfile.tfvars -auto-approve```
 
